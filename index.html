@@ -1,1 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SCRABBLE</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔠</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════ CSS VARS — LIGHT DEFAULT ══ */
+:root {
+  --accent: #c8a800;
+  --accent-text: #7a6400;
+  --bg: #f0ede8;
+  --surface: #ffffff;
+  --surface2: #f5f2ed;
+  --surface3: #ebe8e2;
+  --border: #d8d3cc;
+  --text: #1a1a1a;
+  --text2: #444;
+  --muted: #888;
+  --danger: #cc2222;
+  --success: #1a7a3a;
+  --shadow: rgba(0,0,0,.10);
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+  --radius: 12px;
+  /* Board square colors */
+  --sq-normal: #e8e4de;
+  --sq-dl: #aed6f1;
+  --sq-tl: #2980b9;
+  --sq-dw: #f1948a;
+  --sq-tw: #c0392b;
+  --sq-star: #c0392b;
+  --tile-bg: #f5deb3;
+  --tile-border: #c8a96e;
+  --tile-text: #1a1a1a;
+  --tile-val: #7a5200;
+  --tile-shadow: rgba(0,0,0,.25);
+  --rack-bg: #d4a96a;
+  --rack-border: #b8893a;
+}
 
+[data-dark="on"] {
+  --accent: #e8ff00;
+  --accent-text: #e8ff00;
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface2: #1a1a1a;
+  --surface3: #222222;
+  --border: #2a2a2a;
+  --text: #f0f0f0;
+  --text2: #cccccc;
+  --muted: #777;
+  --danger: #ff4444;
+  --success: #00e676;
+  --shadow: rgba(0,0,0,.5);
+  --sq-normal: #1e2124;
+  --sq-dl: #1a3a5c;
+  --sq-tl: #0d2a4a;
+  --sq-dw: #4a1a1a;
+  --sq-tw: #6a0a0a;
+  --tile-bg: #c8a86a;
+  --tile-border: #8a6830;
+  --tile-text: #0a0a0a;
+  --tile-val: #3a2000;
+  --rack-bg: #2a1e0a;
+  --rack-border: #4a3010;
+}
+
+/* THEMES */
+[data-theme="classic"]  { --sq-dl:#aed6f1; --sq-tl:#2980b9; --sq-dw:#f1948a; --sq-tw:#c0392b; }
+[data-theme="slate"]    { --sq-dl:#b8cfe0; --sq-tl:#4a7a9b; --sq-dw:#c8a8b8; --sq-tw:#7a4a6a; --accent:#3a7bd5; --accent-text:#1a4d99; }
+[data-theme="forest"]   { --sq-dl:#a8d8b8; --sq-tl:#2e8b4a; --sq-dw:#d4c8a0; --sq-tw:#8b6a1a; --accent:#2d7a1e; --accent-text:#1a5010; }
+[data-theme="rose"]     { --sq-dl:#f8d4e4; --sq-tl:#c06080; --sq-dw:#f0c8d4; --sq-tw:#a03050; --accent:#c2185b; --accent-text:#880e4f; }
+[data-theme="carbon"]   { --sq-dl:#3a4a5a; --sq-tl:#2a3a4a; --sq-dw:#4a3a3a; --sq-tw:#3a2a2a; --accent:#333; --accent-text:#111; }
+[data-theme="walnut"]   { --sq-dl:#d4c49a; --sq-tl:#8a6a2a; --sq-dw:#c4a880; --sq-tw:#7a4a10; --accent:#7a4a1a; --accent-text:#4a2800; }
+
+[data-dark="on"][data-theme="classic"]  { --accent:#e8ff00; }
+[data-dark="on"][data-theme="slate"]    { --bg:#05060a; --surface:#0d0f14; --surface2:#141820; --surface3:#1c2230; --border:#252d3a; --accent:#4a9eff; }
+[data-dark="on"][data-theme="forest"]  { --bg:#050f05; --surface:#0a150a; --surface2:#0f1e0f; --surface3:#142014; --border:#1a2e1a; --accent:#4dff6e; }
+[data-dark="on"][data-theme="rose"]    { --bg:#100508; --surface:#180a10; --surface2:#200f16; --surface3:#2a141e; --border:#381020; --accent:#ff6090; }
+[data-dark="on"][data-theme="carbon"]  { --bg:#060708; --surface:#111315; --surface2:#1a1d20; --surface3:#222628; --border:#2e3236; --accent:#e0e0e0; }
+[data-dark="on"][data-theme="walnut"]  { --bg:#0a0602; --surface:#150e04; --surface2:#1e1408; --surface3:#281a0a; --border:#382010; --accent:#e8a040; }
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { width:100%; height:100%; font-family:var(--font-body); overflow:hidden; user-select:none; background:var(--bg); color:var(--text); transition:background .3s, color .3s; }
+body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E"); pointer-events:none; z-index:9999; opacity:.6; }
+
+/* ── SCREENS ── */
+.screen { position:fixed; inset:0; display:flex; flex-direction:column; transition:opacity .3s, transform .3s; }
+.screen.hidden { opacity:0; pointer-events:none; transform:scale(.98); }
+
+/* ══════════════════════════ LANDING ══ */
+#landing { background:var(--bg); justify-content:space-between; padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0); }
+
+.landing-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px 0; }
+.logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.logo-icon { font-size:30px; line-height:1; }
+.logo-text { font-family:var(--font-display); font-size:clamp(26px,5vw,40px); letter-spacing:4px; color:var(--accent); line-height:1; }
+.header-controls { display:flex; gap:8px; }
+.icon-btn { width:38px; height:38px; background:var(--surface); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); transition:all .2s; font-size:16px; box-shadow:0 1px 3px var(--shadow); flex-shrink:0; }
+.icon-btn:hover { border-color:var(--accent); color:var(--accent); }
+.icon-btn.active { background:var(--accent); color:#000; border-color:var(--accent); }
+
+/* HERO — mini scrabble board */
+.hero-section { flex:1; display:flex; align-items:center; justify-content:center; padding:12px; }
+.hero-board { display:grid; grid-template-columns:repeat(15,1fr); grid-template-rows:repeat(15,1fr); width:min(260px,65vw,38vh); height:min(260px,65vw,38vh); border:2px solid var(--border); border-radius:6px; overflow:hidden; box-shadow:0 8px 40px var(--shadow); animation:float 4s ease-in-out infinite; gap:1px; background:var(--border); padding:1px; }
+.hero-sq { border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:5px; font-family:var(--font-mono); }
+.hero-sq.n { background:var(--sq-normal); }
+.hero-sq.dl { background:var(--sq-dl); }
+.hero-sq.tl { background:var(--sq-tl); }
+.hero-sq.dw { background:var(--sq-dw); }
+.hero-sq.tw { background:var(--sq-tw); }
+.hero-sq.t { background:var(--tile-bg); }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+/* PLAYERS BAR */
+.players-bar { display:flex; gap:12px; justify-content:center; align-items:center; padding:0 20px; }
+.vs-label { font-family:var(--font-display); font-size:22px; color:var(--accent); letter-spacing:3px; }
+.player-card { display:flex; flex-direction:column; align-items:center; gap:5px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 14px; flex:1; max-width:160px; box-shadow:0 1px 4px var(--shadow); }
+.player-avatar { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; flex-shrink:0; }
+.player-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.player-name { font-family:var(--font-display); font-size:15px; letter-spacing:1px; color:var(--text); }
+.player-tag { font-family:var(--font-mono); font-size:9px; color:var(--muted); letter-spacing:1px; }
+
+/* ACTION */
+.action-area { padding:16px 24px; display:flex; flex-direction:column; gap:10px; }
+.mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.mode-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:16px; cursor:pointer; transition:all .22s; display:flex; flex-direction:column; gap:5px; box-shadow:0 1px 4px var(--shadow); }
+.mode-card:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 4px 16px var(--shadow); }
+.mode-card:active { transform:scale(.98); }
+.mode-icon { font-size:24px; margin-bottom:2px; }
+.mode-title { font-family:var(--font-display); font-size:20px; letter-spacing:2px; color:var(--accent); }
+.mode-desc { font-family:var(--font-mono); font-size:9px; color:var(--muted); letter-spacing:.5px; line-height:1.4; }
+.settings-row { display:flex; gap:8px; align-items:center; justify-content:space-between; }
+.label-mono { font-family:var(--font-mono); font-size:9px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+.theme-picker { display:flex; gap:5px; }
+.theme-dot { width:22px; height:22px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:all .2s; }
+.theme-dot.active { border-color:var(--accent); transform:scale(1.2); }
+.theme-dot[data-theme="classic"] { background:conic-gradient(#aed6f1 50%,#c0392b 50%); }
+.theme-dot[data-theme="slate"]   { background:conic-gradient(#b8cfe0 50%,#4a7a9b 50%); }
+.theme-dot[data-theme="forest"]  { background:conic-gradient(#a8d8b8 50%,#2e8b4a 50%); }
+.theme-dot[data-theme="rose"]    { background:conic-gradient(#f8d4e4 50%,#a03050 50%); }
+.theme-dot[data-theme="carbon"]  { background:conic-gradient(#3a4a5a 50%,#2a2a2a 50%); }
+.theme-dot[data-theme="walnut"]  { background:conic-gradient(#d4c49a 50%,#7a4a10 50%); }
+
+/* ══════════════════════════ MODALS ══ */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; opacity:0; pointer-events:none; transition:opacity .25s; }
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal { background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:24px; width:100%; max-width:360px; display:flex; flex-direction:column; gap:16px; transform:translateY(8px); transition:transform .25s; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px var(--shadow); }
+.modal-overlay.open .modal { transform:translateY(0); }
+.modal::-webkit-scrollbar { width:3px; }
+.modal::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.modal-title { font-family:var(--font-display); font-size:26px; letter-spacing:3px; color:var(--accent); }
+.field-group { display:flex; flex-direction:column; gap:7px; }
+.field-label { font-family:var(--font-mono); font-size:9px; color:var(--muted); letter-spacing:1px; }
+.field-input { background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; padding:11px 13px; color:var(--text); font-family:var(--font-mono); font-size:13px; outline:none; transition:border-color .2s; width:100%; }
+.field-input:focus { border-color:var(--accent); }
+.player-select-list { display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto; }
+.player-select-list::-webkit-scrollbar { width:3px; }
+.player-select-list::-webkit-scrollbar-thumb { background:var(--border); }
+.player-opt { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; border:1.5px solid var(--border); background:var(--surface2); cursor:pointer; transition:all .18s; }
+.player-opt:hover { border-color:var(--accent); }
+.player-opt.selected { border-color:var(--accent); background:var(--surface3); }
+.player-opt .av { width:34px; height:34px; border-radius:50%; overflow:hidden; background:var(--surface3); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; border:1.5px solid var(--border); }
+.player-opt .av img { width:100%; height:100%; object-fit:cover; }
+.player-opt .av-init { font-family:var(--font-display); font-size:16px; color:var(--text2); }
+.player-opt-info { display:flex; flex-direction:column; gap:1px; }
+.player-opt-name { font-family:var(--font-display); font-size:15px; letter-spacing:1px; color:var(--text); }
+.player-opt-tag { font-family:var(--font-mono); font-size:9px; color:var(--muted); }
+.error-msg { font-family:var(--font-mono); font-size:9px; color:var(--danger); letter-spacing:.5px; display:none; }
+.error-msg.show { display:block; }
+.divider { height:1px; background:var(--border); }
+.btn-primary { background:var(--accent); color:#000; border:none; border-radius:8px; padding:13px; font-family:var(--font-display); font-size:17px; letter-spacing:2px; cursor:pointer; transition:all .2s; text-align:center; font-weight:700; }
+.btn-primary:hover { filter:brightness(1.08); transform:translateY(-1px); }
+.btn-primary:active { transform:scale(.98); }
+.btn-ghost { background:transparent; color:var(--muted); border:1.5px solid var(--border); border-radius:8px; padding:11px; font-family:var(--font-mono); font-size:10px; letter-spacing:1px; cursor:pointer; transition:all .2s; text-align:center; }
+.btn-ghost:hover { border-color:var(--muted); color:var(--text); }
+.btn-danger { color:var(--danger) !important; border-color:var(--danger) !important; }
+.chip { display:inline-flex; align-items:center; gap:3px; background:var(--surface2); border:1px solid var(--border); border-radius:16px; padding:2px 7px; font-family:var(--font-mono); font-size:8px; color:var(--muted); letter-spacing:.5px; }
+.chip.accent { border-color:var(--accent); color:var(--accent); background:transparent; }
+.chip.danger { border-color:var(--danger); color:var(--danger); background:transparent; }
+
+/* ══════════════════════════ GAME SCREEN ══ */
+#game { background:var(--bg); }
+
+.game-header { display:flex; align-items:center; justify-content:space-between; padding:8px 16px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0; box-shadow:0 1px 4px var(--shadow); min-height:72px; gap:8px; }
+.game-logo { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.game-logo .logo-icon { font-size:22px; }
+.game-logo .logo-text { font-size:20px; letter-spacing:3px; }
+
+/* Player bar */
+.player-bar { flex:1; display:flex; align-items:center; justify-content:center; gap:10px; min-width:0; }
+.pb-player { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; }
+.pb-avatar { width:52px; height:52px; border-radius:50%; overflow:hidden; flex-shrink:0; transition:box-shadow .3s; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:24px; color:var(--text2); }
+.pb-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
+.pb-avatar.turn-active { box-shadow:0 0 0 3px #e53935,0 0 18px 6px rgba(229,57,53,.55); animation:pulse-red 1.1s ease-in-out infinite alternate; }
+.pb-avatar.turn-waiting { box-shadow:0 0 0 2px #2e7d32,0 0 12px 4px rgba(46,125,50,.4); }
+@keyframes pulse-red { from{box-shadow:0 0 0 3px #e53935,0 0 14px 4px rgba(229,57,53,.45)} to{box-shadow:0 0 0 3px #ff5252,0 0 26px 10px rgba(255,82,82,.65)} }
+.pb-name { font-family:var(--font-display); font-size:12px; letter-spacing:1px; color:var(--text); white-space:nowrap; max-width:72px; text-overflow:ellipsis; overflow:hidden; text-align:center; }
+.pb-score-big { font-family:var(--font-display); font-size:26px; letter-spacing:2px; color:var(--accent); line-height:1; }
+.pb-centre { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; }
+.pb-info-row { display:flex; align-items:center; gap:5px; }
+.pb-chip { font-family:var(--font-mono); font-size:9px; letter-spacing:.5px; color:var(--muted); background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:2px 7px; white-space:nowrap; }
+.pb-chip.alert { color:var(--accent); border-color:var(--accent); }
+.pb-chip.danger { color:var(--danger); border-color:var(--danger); }
+.game-controls { display:flex; gap:6px; flex-shrink:0; }
+
+/* ══════════════════════════ GAME BODY ══ */
+.game-body { flex:1; display:flex; overflow:hidden; min-height:0; }
+
+/* Board column */
+.board-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px; gap:6px; min-width:0; overflow:hidden; }
+
+/* THE SCRABBLE BOARD */
+.scrabble-board {
+  --cell: min(calc((100vw - 240px) / 15), calc((100vh - 160px) / 18), 40px);
+  display:grid;
+  grid-template-columns:repeat(15, var(--cell));
+  grid-template-rows:repeat(15, var(--cell));
+  gap:1px;
+  background:var(--border);
+  border:2px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+  box-shadow:0 4px 24px var(--shadow);
+  flex-shrink:0;
+}
+
+/* Board squares */
+.sq {
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition:filter .12s;
+  overflow:hidden;
+}
+.sq.n  { background:var(--sq-normal); }
+.sq.dl { background:var(--sq-dl); }
+.sq.tl { background:var(--sq-tl); }
+.sq.dw { background:var(--sq-dw); }
+.sq.tw { background:var(--sq-tw); }
+.sq.star { background:var(--sq-tw); }
+.sq-label { font-family:var(--font-mono); font-size:calc(var(--cell) * .22); color:rgba(255,255,255,.7); font-weight:500; letter-spacing:0; text-align:center; line-height:1; pointer-events:none; }
+.sq.n .sq-label { color:rgba(0,0,0,.15); }
+.sq.dl .sq-label, .sq.dw .sq-label { color:rgba(255,255,255,.8); }
+.sq.star .sq-label { font-size:calc(var(--cell) * .55); color:rgba(255,255,255,.9); }
+.sq.drop-target { filter:brightness(1.3); outline:2px solid var(--accent); outline-offset:-2px; }
+.sq.last-played { background:rgba(200,168,0,.18) !important; }
+
+/* TILE on board */
+.tile {
+  position:absolute;
+  inset:3%;
+  background:var(--tile-bg);
+  border:1px solid var(--tile-border);
+  border-radius:3px;
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column;
+  box-shadow:1px 2px 4px var(--tile-shadow);
+  cursor:grab;
+  user-select:none;
+  z-index:2;
+  transition:transform .15s, box-shadow .15s;
+}
+.tile:hover { transform:scale(1.08); box-shadow:2px 4px 8px var(--tile-shadow); }
+.tile.dragging { opacity:.5; }
+.tile.placed-this-turn { border-color:var(--accent); box-shadow:0 0 6px rgba(200,168,0,.5); }
+.tile-letter { font-family:var(--font-display); font-size:calc(var(--cell) * .52); color:var(--tile-text); line-height:1; }
+.tile-val { font-family:var(--font-mono); font-size:calc(var(--cell) * .22); color:var(--tile-val); line-height:1; position:absolute; bottom:5%; right:8%; }
+.tile.blank .tile-letter { color:var(--accent-text); font-style:italic; }
+
+/* ── RACK ── */
+.rack-area { display:flex; flex-direction:column; align-items:center; gap:6px; width:100%; flex-shrink:0; }
+.rack-label { font-family:var(--font-mono); font-size:9px; color:var(--muted); letter-spacing:1px; }
+.rack {
+  --rcell: min(calc((100vw - 200px) / 8), 52px);
+  display:flex; gap:4px;
+  background:var(--rack-bg);
+  border:2px solid var(--rack-border);
+  border-radius:10px;
+  padding:6px 10px;
+  box-shadow:0 2px 12px var(--shadow), inset 0 1px 0 rgba(255,255,255,.15);
+  min-height:calc(var(--rcell) + 16px);
+  align-items:center;
+}
+.rack-slot {
+  width:var(--rcell); height:var(--rcell);
+  border:1.5px dashed rgba(255,255,255,.25);
+  border-radius:4px;
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+  transition:border-color .15s;
+}
+.rack-slot.drop-target { border-color:var(--accent); border-style:solid; background:rgba(200,168,0,.12); }
+/* Rack tile */
+.rack-tile {
+  position:absolute; inset:3%;
+  background:var(--tile-bg);
+  border:1px solid var(--tile-border);
+  border-radius:3px;
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column;
+  box-shadow:1px 2px 6px var(--tile-shadow), inset 0 1px 0 rgba(255,255,255,.4);
+  cursor:grab;
+  transition:transform .15s, box-shadow .15s;
+}
+.rack-tile:hover { transform:translateY(-4px) scale(1.05); box-shadow:2px 6px 12px var(--tile-shadow); }
+.rack-tile.selected { transform:translateY(-8px); box-shadow:2px 8px 16px var(--tile-shadow); border-color:var(--accent); }
+.rack-tile.dragging { opacity:.4; transform:none; }
+.rack-letter { font-family:var(--font-display); font-size:calc(var(--rcell) * .52); color:var(--tile-text); line-height:1; }
+.rack-val { font-family:var(--font-mono); font-size:calc(var(--rcell) * .2); color:var(--tile-val); position:absolute; bottom:5%; right:8%; }
+
+/* ── ACTION BUTTONS ROW ── */
+.action-row { display:flex; gap:6px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.action-btn { font-family:var(--font-display); font-size:14px; letter-spacing:1.5px; padding:7px 14px; border-radius:7px; border:1.5px solid var(--border); background:var(--surface); color:var(--text2); cursor:pointer; transition:all .2s; white-space:nowrap; }
+.action-btn:hover { border-color:var(--accent); color:var(--accent); }
+.action-btn.primary { background:var(--accent); color:#000; border-color:var(--accent); font-weight:700; }
+.action-btn.primary:hover { filter:brightness(1.1); }
+.action-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+/* ── RIGHT PANEL ── */
+.right-panel { width:200px; flex-shrink:0; display:flex; flex-direction:column; gap:8px; padding:8px; overflow-y:auto; background:var(--surface); border-left:1px solid var(--border); }
+.right-panel::-webkit-scrollbar { width:3px; }
+.right-panel::-webkit-scrollbar-thumb { background:var(--border); }
+.panel-card { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:5px; }
+.panel-title { font-family:var(--font-display); font-size:14px; letter-spacing:1.5px; color:var(--accent); }
+.log-entry { font-family:var(--font-mono); font-size:9px; color:var(--text2); padding:3px 0; border-bottom:1px solid var(--border); line-height:1.4; }
+.log-entry:last-child { border-bottom:none; }
+.log-word { color:var(--accent); font-weight:500; }
+.log-pts { color:var(--text); }
+.tiles-left-bar { height:4px; background:var(--border); border-radius:2px; overflow:hidden; margin-top:2px; }
+.tiles-left-fill { height:100%; background:var(--accent); border-radius:2px; transition:width .3s; }
+
+/* ── BLANK TILE CHOOSER ── */
+.blank-chooser { position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:200; opacity:0; pointer-events:none; transition:opacity .2s; }
+.blank-chooser.open { opacity:1; pointer-events:all; }
+.blank-panel { background:var(--surface); border:2px solid var(--accent); border-radius:14px; padding:20px; display:flex; flex-direction:column; gap:12px; align-items:center; box-shadow:0 8px 40px var(--shadow); }
+.blank-title { font-family:var(--font-display); font-size:22px; letter-spacing:2px; color:var(--accent); }
+.blank-letters { display:grid; grid-template-columns:repeat(9,1fr); gap:6px; }
+.blank-letter { width:36px; height:36px; background:var(--tile-bg); border:1px solid var(--tile-border); border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-family:var(--font-display); font-size:20px; color:var(--tile-text); transition:all .15s; }
+.blank-letter:hover { transform:scale(1.15); border-color:var(--accent); }
+
+/* ── RESULT ── */
+.result-modal { position:fixed; inset:0; background:rgba(0,0,0,.8); backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center; z-index:300; opacity:0; pointer-events:none; transition:opacity .3s; }
+.result-modal.open { opacity:1; pointer-events:all; }
+.result-panel { background:var(--surface); border:2px solid var(--border); border-radius:18px; padding:32px; text-align:center; display:flex; flex-direction:column; gap:14px; align-items:center; max-width:320px; width:100%; box-shadow:0 12px 60px var(--shadow); }
+.result-icon { font-size:56px; }
+.result-title { font-family:var(--font-display); font-size:36px; letter-spacing:4px; color:var(--accent); }
+.result-scores { display:flex; gap:24px; justify-content:center; }
+.result-score { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.result-score-val { font-family:var(--font-display); font-size:32px; color:var(--text); }
+.result-score-name { font-family:var(--font-mono); font-size:9px; color:var(--muted); }
+.result-winner { font-family:var(--font-body); font-size:15px; color:var(--text); font-weight:600; }
+
+/* in-game menu */
+.ig-theme-dot { width:22px; height:22px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:all .2s; }
+.ig-theme-dot.active { border-color:var(--accent); transform:scale(1.2); }
+.ig-theme-dot[data-theme="classic"] { background:conic-gradient(#aed6f1 50%,#c0392b 50%); }
+.ig-theme-dot[data-theme="slate"]   { background:conic-gradient(#b8cfe0 50%,#4a7a9b 50%); }
+.ig-theme-dot[data-theme="forest"]  { background:conic-gradient(#a8d8b8 50%,#2e8b4a 50%); }
+.ig-theme-dot[data-theme="rose"]    { background:conic-gradient(#f8d4e4 50%,#a03050 50%); }
+.ig-theme-dot[data-theme="carbon"]  { background:conic-gradient(#3a4a5a 50%,#2a2a2a 50%); }
+.ig-theme-dot[data-theme="walnut"]  { background:conic-gradient(#d4c49a 50%,#7a4a10 50%); }
+
+/* Responsive */
+@media (max-width:600px) {
+  .right-panel { display:none; }
+  .scrabble-board { --cell: min(calc((100vw - 16px)/15), calc((100vh - 220px)/15)); }
+  .rack { --rcell: min(calc((100vw - 48px)/8), 44px); }
+  .game-header { padding:6px 10px; min-height:64px; }
+  .pb-avatar { width:42px; height:42px; }
+  .pb-score-big { font-size:20px; }
+}
+@media (max-width:400px) {
+  .pb-name { display:none; }
+}
+</style>
+</head>
+<body data-theme="carbon" data-dark="off">
+
+<!-- ══════════════════════════════════ LANDING ══ -->
+<div class="screen" id="landing">
+  <div class="landing-header">
+    <a class="logo" href="#" onclick="return false">
+      <span class="logo-icon">🔠</span>
+      <span class="logo-text">SCRABBLE</span>
+    </a>
+    <div class="header-controls">
+      <div class="icon-btn" id="darkToggle" title="Dark/Light">☀️</div>
+      <div class="icon-btn" id="fullscreenBtn" title="Fullscreen">⛶</div>
+    </div>
+  </div>
+
+  <div class="hero-section">
+    <div class="hero-board" id="heroBoard"></div>
+  </div>
+
+  <div class="players-bar">
+    <div class="player-card">
+      <div class="player-avatar" id="landingP1Av"></div>
+      <div class="player-name" id="landingP1Name">PLAYER 1</div>
+      <div class="player-tag">GOES FIRST</div>
+    </div>
+    <div class="vs-label">VS</div>
+    <div class="player-card">
+      <div class="player-avatar" id="landingP2Av"></div>
+      <div class="player-name" id="landingP2Name">PLAYER 2</div>
+      <div class="player-tag">GOES SECOND</div>
+    </div>
+  </div>
+
+  <div class="action-area">
+    <div class="mode-grid">
+      <div class="mode-card" id="pvpBtn">
+        <div class="mode-icon">👥</div>
+        <div class="mode-title">2 PLAYERS</div>
+        <div class="mode-desc">SAME DEVICE<br>PASS & PLAY</div>
+      </div>
+      <div class="mode-card" id="solBtn">
+        <div class="mode-icon">🤖</div>
+        <div class="mode-title">vs BOT</div>
+        <div class="mode-desc">PLAY AGAINST<br>AI OPPONENT</div>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="label-mono">BOARD THEME</div>
+      <div class="theme-picker" id="landingThemePicker"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ GAME ══ -->
+<div class="screen hidden" id="game">
+  <div class="game-header">
+    <div class="game-logo">
+      <span class="logo-icon">🔠</span>
+      <span class="logo-text">SCRABBLE</span>
+    </div>
+
+    <!-- Player bar -->
+    <div class="player-bar">
+      <div class="pb-player" id="pbP1">
+        <div class="pb-avatar" id="pbP1Av"></div>
+        <div class="pb-name" id="pbP1Name">P1</div>
+        <div class="pb-score-big" id="pbP1Score">0</div>
+      </div>
+
+      <div class="pb-centre">
+        <div class="pb-info-row">
+          <span class="pb-chip" id="statusChip">P1 TO PLAY</span>
+        </div>
+        <div class="pb-info-row" style="margin-top:3px;gap:3px">
+          <span class="pb-chip" id="tilesLeftChip">98 TILES</span>
+          <span class="pb-chip" id="modeChip">PvP</span>
+        </div>
+      </div>
+
+      <div class="pb-player" id="pbP2">
+        <div class="pb-avatar" id="pbP2Av"></div>
+        <div class="pb-name" id="pbP2Name">P2</div>
+        <div class="pb-score-big" id="pbP2Score">0</div>
+      </div>
+    </div>
+
+    <div class="game-controls">
+      <div class="icon-btn" id="undoBtn" title="Recall tiles to rack">↩</div>
+      <div class="icon-btn" id="shuffleBtn" title="Shuffle rack">🔀</div>
+      <div class="icon-btn" id="fullscreenBtnGame" title="Fullscreen">⛶</div>
+      <div class="icon-btn" id="menuBtn" title="Menu">☰</div>
+    </div>
+  </div>
+
+  <div class="game-body">
+    <!-- BOARD + RACK column -->
+    <div class="board-col">
+      <div class="scrabble-board" id="board"></div>
+      <div class="rack-area">
+        <div class="rack" id="rack"></div>
+        <div class="action-row">
+          <button class="action-btn primary" id="playBtn">PLAY WORD</button>
+          <button class="action-btn" id="exchangeBtn">EXCHANGE</button>
+          <button class="action-btn" id="passBtn">PASS</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="panel-card">
+        <div class="panel-title">BAG</div>
+        <div class="label-mono" id="bagCount">98 TILES LEFT</div>
+        <div class="tiles-left-bar"><div class="tiles-left-fill" id="bagBar" style="width:100%"></div></div>
+      </div>
+      <div class="panel-card" style="flex:1;overflow:hidden;min-height:0">
+        <div class="panel-title">MOVES</div>
+        <div id="moveLog" style="display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1;max-height:300px;"></div>
+      </div>
+      <div class="panel-card">
+        <div class="panel-title">SCORES</div>
+        <div style="display:flex;flex-direction:column;gap:4px" id="scoreBreakdown"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ MODALS ══ -->
+
+<!-- PvP Setup -->
+<div class="modal-overlay" id="pvpModal">
+  <div class="modal">
+    <div class="modal-title">2 PLAYER SETUP</div>
+    <div class="field-group">
+      <div class="field-label">PLAYER 1</div>
+      <div class="player-select-list" id="p1List"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="field-group">
+      <div class="field-label">PLAYER 2</div>
+      <div class="player-select-list" id="p2List"></div>
+    </div>
+    <div class="field-group" id="fredPassWrap" style="display:none;flex-direction:column;gap:7px">
+      <div class="field-label">FRED'S PASSWORD</div>
+      <input class="field-input" id="fredPassInput" type="password" placeholder="••••••••">
+      <div class="error-msg" id="fredPassErr">⚠ INCORRECT PASSWORD</div>
+    </div>
+    <button class="btn-primary" id="pvpStartBtn">START GAME</button>
+    <button class="btn-ghost" id="pvpCancelBtn">CANCEL</button>
+  </div>
+</div>
+
+<!-- vs Bot Setup -->
+<div class="modal-overlay" id="solModal">
+  <div class="modal">
+    <div class="modal-title">vs BOT SETUP</div>
+    <div class="field-group">
+      <div class="field-label">YOUR PLAYER</div>
+      <div class="player-select-list" id="solList"></div>
+    </div>
+    <div class="field-group" id="solFredPassWrap" style="display:none;flex-direction:column;gap:7px">
+      <div class="field-label">FRED'S PASSWORD</div>
+      <input class="field-input" id="solFredPassInput" type="password" placeholder="••••••••">
+      <div class="error-msg" id="solFredPassErr">⚠ INCORRECT PASSWORD</div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">BOT DIFFICULTY</div>
+      <div style="display:flex;gap:7px" id="diffPicker">
+        <div class="action-btn selected-diff" data-diff="easy" style="flex:1;text-align:center;border-color:var(--accent);color:var(--accent)">🌱 EASY</div>
+        <div class="action-btn" data-diff="medium" style="flex:1;text-align:center">⚔ MED</div>
+        <div class="action-btn" data-diff="hard" data-diff-btn style="flex:1;text-align:center">👑 HARD</div>
+      </div>
+    </div>
+    <button class="btn-primary" id="solStartBtn">START GAME</button>
+    <button class="btn-ghost" id="solCancelBtn">CANCEL</button>
+  </div>
+</div>
+
+<!-- In-game Menu -->
+<div class="modal-overlay" id="menuModal">
+  <div class="modal">
+    <div class="modal-title">MENU</div>
+    <div class="field-group">
+      <div class="field-label">BOARD THEME</div>
+      <div class="theme-picker" id="igThemePicker"></div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">DISPLAY</div>
+      <div style="display:flex;gap:8px">
+        <div class="icon-btn" id="menuDark" style="width:auto;padding:0 12px;font-size:11px;font-family:var(--font-mono);letter-spacing:1px">☀️ LIGHT</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <button class="btn-ghost" id="menuNewGame">↩ NEW GAME</button>
+    <button class="btn-ghost btn-danger" id="menuResign">🏳 RESIGN</button>
+    <button class="btn-ghost" id="menuClose">✕ CLOSE</button>
+  </div>
+</div>
+
+<!-- Blank tile chooser -->
+<div class="blank-chooser" id="blankChooser">
+  <div class="blank-panel">
+    <div class="blank-title">CHOOSE LETTER</div>
+    <div class="blank-letters" id="blankLetters"></div>
+  </div>
+</div>
+
+<!-- Exchange tiles -->
+<div class="modal-overlay" id="exchangeModal">
+  <div class="modal">
+    <div class="modal-title">EXCHANGE TILES</div>
+    <div class="label-mono">CLICK TILES TO SELECT FOR EXCHANGE</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center" id="exchangeRack"></div>
+    <button class="btn-primary" id="exchangeConfirmBtn">EXCHANGE SELECTED</button>
+    <button class="btn-ghost" id="exchangeCancelBtn">CANCEL</button>
+  </div>
+</div>
+
+<!-- Result -->
+<div class="result-modal" id="resultModal">
+  <div class="result-panel">
+    <div class="result-icon">🏆</div>
+    <div class="result-title" id="resultTitle">GAME OVER</div>
+    <div class="result-scores" id="resultScores"></div>
+    <div class="result-winner" id="resultWinner"></div>
+    <button class="btn-primary" id="resultPlayAgain" style="width:100%">PLAY AGAIN</button>
+    <button class="btn-ghost" id="resultMenu" style="width:100%">MAIN MENU</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════ CONSTANTS ══
+const FRED_PASS = '!r0nM@n';
+const THEMES = ['classic','slate','forest','rose','carbon','walnut'];
+
+const NAMED_PLAYERS = [
+  { id:'fred',    name:'Fred',    photo:'fred.png',    isFred:true  },
+  { id:'arianne', name:'Arianne', photo:'arianne.png', isFred:false },
+  { id:'dave',    name:'Dave',    photo:'dave.png',    isFred:false },
+  { id:'skai',    name:'Skai',    photo:'skai.png',    isFred:false },
+  { id:'joe',     name:'Joe',     photo:'joe.png',     isFred:false },
+  { id:'ben',     name:'Ben',     photo:'ben.png',     isFred:false },
+  { id:'guest',   name:'Guest',   photo:null,          isFred:false },
+];
+
+// ── LETTER DISTRIBUTION & VALUES ──
+const LETTER_DATA = {
+  A:{val:1,count:9}, B:{val:3,count:2}, C:{val:3,count:2}, D:{val:2,count:4},
+  E:{val:1,count:12}, F:{val:4,count:2}, G:{val:2,count:3}, H:{val:4,count:2},
+  I:{val:1,count:9}, J:{val:8,count:1}, K:{val:5,count:1}, L:{val:1,count:4},
+  M:{val:3,count:2}, N:{val:1,count:6}, O:{val:1,count:8}, P:{val:3,count:2},
+  Q:{val:10,count:1}, R:{val:1,count:6}, S:{val:1,count:4}, T:{val:1,count:6},
+  U:{val:1,count:4}, V:{val:4,count:2}, W:{val:4,count:2}, X:{val:8,count:1},
+  Y:{val:4,count:2}, Z:{val:10,count:1}, '?':{val:0,count:2}
+};
+
+// ── BOARD LAYOUT (15×15) ──
+// tw=triple word, dw=double word, tl=triple letter, dl=double letter, n=normal, star=center
+const BOARD_LAYOUT = [
+  'tw n  n  dl n  n  n  tw n  n  n  dl n  n  tw',
+  'n  dw n  n  n  tl n  n  n  tl n  n  n  dw n ',
+  'n  n  dw n  n  n  dl n  dl n  n  n  dw n  n ',
+  'dl n  n  dw n  n  n  dl n  n  n  dw n  n  dl',
+  'n  n  n  n  dw n  n  n  n  n  dw n  n  n  n ',
+  'n  tl n  n  n  tl n  n  n  tl n  n  n  tl n ',
+  'n  n  dl n  n  n  dl n  dl n  n  n  dl n  n ',
+  'tw n  n  dl n  n  n  ** n  n  n  dl n  n  tw',
+  'n  n  dl n  n  n  dl n  dl n  n  n  dl n  n ',
+  'n  tl n  n  n  tl n  n  n  tl n  n  n  tl n ',
+  'n  n  n  n  dw n  n  n  n  n  dw n  n  n  n ',
+  'dl n  n  dw n  n  n  dl n  n  n  dw n  n  dl',
+  'n  n  dw n  n  n  dl n  dl n  n  n  dw n  n ',
+  'n  dw n  n  n  tl n  n  n  tl n  n  n  dw n ',
+  'tw n  n  dl n  n  n  tw n  n  n  dl n  n  tw',
+].map(row => row.trim().split(/\s+/));
+
+// ── WORD LIST (common Scrabble words for validation) ──
+// Using a curated list for offline play
+const WORD_LIST = new Set(`AA AB AD AE AG AH AI AL AM AN AR AS AT AW AX AY
+BA BE BI BO
+DA DE DO
+ED EF EH EL EM EN ER ES ET EX
+FA FE
+GI GO
+HA HE HI HM HO
+ID IF IN IS IT
+JO
+KA KI
+LA LI LO
+MA ME MI MM MO MU MY
+NA NE NO NU
+OD OE OF OH OI OK OM ON OP OR OS OW OX OY
+PA PE PI
+QI
+RE
+SH SI SO
+TA TI TO
+UH UM UN UP UT
+WE WO
+XI XU
+YA YE YO
+ZA
+AAH AAL AAS ABA ABO ABS ABY ACE ACT ADD ADO ADS ADZ AFF AFT AGA AGE AGO AGS AID AIM AIN AIR AIS AIT ALA ALB ALE ALL ALP ALS ALT AMA AMI AMP AMU ANA AND ANE ANI ANT ANY APE APO APP APT ARB ARC ARE ARF ARK ARM ARP ARS ART ASH ASK ASP ASS ATE ATT AUK AVA AVE AVO AWE AWL AWN AXE AYE AYS
+BAA BAD BAG BAH BAL BAM BAN BAP BAR BAS BAT BAY BED BEG BEL BEN BES BET BEY BIB BID BIG BIN BIO BIS BIT BIZ BOA BOB BOG BOO BOP BOT BOW BOX BOY BRA BRO BUB BUD BUG BUM BUN BUR BUS BUT BUY
+CAB CAD CAM CAN CAP CAR CAT CAW CAY CEE CEL CEP CHI CIS CIT COB COD COG COL CON COO COP COR COS COT COW COY COZ CRU CUB CUD CUE CUR CUT
+DAB DAD DAH DAK DAL DAM DAP DAW DAY DEB DEE DEL DEN DEW DEX DEY DIB DID DIG DIM DIN DIP DIS DIT DOC DOE DOG DOL DOM DOR DOT DOW DRY DUB DUD DUE DUG DUN DUO DUP
+EAR EAT EEL EFF EFS ELD ELF ELK ELM ELS EME EMU END ENG ERA ERE ERG ERN ERS ESS ETA ETH EVE EWE EYE
+FAB FAD FAN FAP FAR FAS FAT FAX FAY FED FEH FEM FEN FER FET FEU FEW FEY FEZ FIB FIG FIL FIN FIR FIT FIX FIZ FLU FLY FOB FOE FOG FOH FON FOP FOR FOU FOX FOY FRO FRY FUB FUD FUG FUN FUR
+GAB GAD GAE GAG GAL GAP GAR GAS GAT GAY GED GEL GEM GET GEY GIB GIG GIN GNU GOB GOD GOR GOT GOY GUL GUM GUN GUT GUY GYM GYP
+HAD HAE HAG HAJ HAM HAP HAS HAT HAW HAY HEH HEM HEN HER HES HEW HEX HEY HID HIM HIN HIP HIS HIT HMM HOB HOD HOE HOG HOM HOP HOT HOW HOY HUB HUG HUM HUP HUT
+ICE ICK ICY ILL IMP INK INN ION IRE
+JAB JAG JAM JAR JAW JAY JEE JEU JIB JIG JIN JOB JOE JOG JOT JOW JOY JUG JUS JUT
+KAB KAS KAT KAY KEA KEF KEG KEN KEP KET KEX KGB KID KIN KIP KIR KIT
+LAB LAC LAD LAG LAM LAP LAR LAS LAT LAV LAW LAX LAY LEA LED LEG LET LEU LEV LEX LEY LIB LID LIE LIT LOG LOO LOP LOT LOW LOX
+MAA MAC MAD MAE MAG MAN MAP MAR MAS MAT MAW MAX MAY MED MEL MEM MET MEW MHO MIB MID MIG MIM MIR MIS MIX MOB MOD MON MOP MOT MOU MOW MUD MUG MUM
+NAB NAE NAG NAN NAP NAW NAY NIB NIL NIM NIP NIT NIX NOB NOD NOG NOR NOT NOW NTH NUB NUN NUS NUT
+OAF OAK OAR OAT OCA ODD ODS OEK OFF OFT OHM OHO OHO OHS OIL OKA OKE OLD OLE OMS ONE ONO ONS OOH OOT OPE OPS OPT ORC ORE ORS ORT OSE OUD OUR OUT OVA OWE OWL OWN
+PAC PAD PAH PAL PAM PAN PAP PAR PAS PAT PAW PAX PAY PEA PEC PED PEE PEG PEH PEP PER PES PET PEW PHO PIA PIC PIE PIG PIN PIP PIU PIX PLY POD POH POI POM POP POT POW POX POI PRY PUB PUD PUL PUN PUP PUS PUT
+RAD RAG RAH RAJ RAM RAN RAP RAS RAT RAW RAX RAY REC RED REF REI REM REP RES RET REV REX RHO RIB RID RIG RIM RIP ROB ROD ROE ROM ROT ROW RUB RUG RUM RUN RUT RYA RYE
+SAB SAC SAD SAG SAP SAT SAW SAX SAY SEA SEC SEE SEG SEI SEL SEN SER SET SEW SHE SHY SIB SIC SIM SIP SIR SIS SIT SIX SKI SKY SLY SOB SOD SON SOP SOT SOW SOX SOY SPA SPY STY SUB SUM SUN SUP
+TAB TAD TAE TAG TAJ TAM TAN TAO TAP TAR TAS TAT TAU TAV TAW TAX TEA TED TEE TEG TEN THE TIE TIL TIN TIP TIS TOD TOE TOG TOM TON TOO TOP TOR TOT TOW TOY TUB TUG TUN TUP TUX
+UDO UGH UKE ULU UMM UMP UNS UPO URB USE UTA UTE UTS
+VAC VAR VAS VAT VAV VAW VEE VEG VET VEX VIA VIE VIS VOW VUG
+WAB WAD WAE WAG WAS WAW WAX WAY WEB WED WEE WEM WET WHO WHY WIG WIN WIS WIT WIZ WOE WOG WOK WON WOO WOP WOS WOT WOW
+YAH YAK YAM YAP YAW YEH YEN YEP YEW YID YIN YIP YOB YOD YOM YON YOU YOW YUK YUM YUP
+ZAG ZAP ZAX ZED ZEK ZEN ZEP ZIG ZIT ZOA ZOO
+`.trim().split(/\s+/));
+
+// Add common longer words
+const LONG_WORDS = `ABLE ABLY ACED ACES ACID ACME ACNE ACRE ACTS ADOS AGED AGES AIDE AIMS AIRS AIRY AKIN ALAS ALOE ALSO ALTO ALUM AMOK AMPS ANAL ANEW ANON ANTE ANTI ANTS APEX APES ARCH ARCS AREA ARMY ARTS ARTS ASHY ATOM ATOP AUNT AVID AVOW AWED AWLS AWRY AXED AXES AXIS AXLE BABY BACK BADE BAIL BAIT BALE BALL BALM BAND BANE BANG BANK BARE BARD BARK BARN BARS BASH BASK BASS BASTE BATH BATS BAUD BAWL BAYS BEAD BEAM BEAN BEAR BEAT BEEN BEER BEET BELL BELT BETS BILE BILL BIND BIRD BITE BITS BLAH BLOT BLOW BLUE BLUNT BLUR BOAS BOAT BOLD BOLT BOMB BOND BONE BOON BOOT BORE BORN BOSS BOTH BOIL BROW BULL BUMP BUNK BURN BURP BURY BUSH BUSY BUYS BUZZ CAFE CAGE CAKE CALL CALM CAME CAMP CANE CAPE CARD CARE CART CASE CASH CAST CAVE CELL CENT CHAD CHAP CHAR CHAT CHEW CHOP CHIN CHIP CHIT CITE CITY CLAM CLAP CLAW CLAY CLEF CLIP CLOT CLUB CLUE COAL COAT COIL COIN COLA COLD COME CONE COOK COOL COPE CORD CORE CORK CORN COST COZY CRAM CREW CROP CROW CUES CURL CURE DABS DACE DAIS DALE DAME DARE DARK DASH DATA DATE DAWN DAZE DEAD DEAL DEAN DEED DEEP DEFT DELI DELL DEMO DENT DENY DEFT DIAL DICE DIKE DILL DIME DINE DIRE DIRT DISC DISH DISK DIVE DOCK DOLE DOME DONE DOPE DOSE DOTE DOVE DRAG DRAW DREW DRIP DROP DRUM DUPE DUSK DUST DUTY EACH EARN EASE EASY EDGE EMIT EPIC EVEN EVER EVIL EXAM EXEC FACT FADE FAIL FAIR FALL FAME FANG FARE FARM FAST FATE FAWN FAZE FEAR FEAT FEED FEEL FEET FELL FELT FEND FERN FETE FEUD FIFE FILE FILL FILM FIND FINE FINK FIRM FISH FIST FITS FIZZ FLAB FLAP FLAW FLEA FLEW FLEX FLIT FLOG FLOW FOAM FOLD FOLK FOND FOOL FORE FORK FORM FORT FOUL FOUR FOWL FRAY FREE FRET FROG FUEL FULL FUND FUSE FUSS GAIN GALE GALL GAME GANG GAOL GAPE GASH GATE GAZE GELS GEMS GIBE GIVE GLAD GLEE GLEN GLOB GLOSS GLOW GLUE GLUT GOAL GOAT GOES GOLD GOLF GONE GOOF GORE GOWN GRAB GRAM GRAPPLE GRAY GRIT GUSH GUST GUTS GUYS HACK HAIL HAIR HALF HALL HALT HAND HANG HARD HARE HARM HARP HASH HATE HAUL HAVE HAZE HAZY HEAP HEAT HEEL HEED HELP HEMP HERE HERO HIDE HIGH HILL HILT HINT HIRE HOAX HOCK HOLD HOLE HOLY HOME HOOD HOOP HOPE HORN HOST HOUR HOWL HUCK HUGE HULL HUNG HUNT HURL HYMN ICED ICON IDEA IDLE IMAM INCH INTO IRON ITEM JABS JADE JAIL JEER JEST JOIN JOKE JOLT JOYS JUMP JUNK KEEN KEEP KERN KEYS KICK KILL KILN KIND KING KITE KNIT KNOB KNOW LACE LACK LADY LAID LAIN LAKE LAME LAMP LAND LANE LARK LASH LASS LAST LATE LAUD LAVA LAWN LAZY LEAD LEAF LEAK LEAN LEAP LEND LENS LEST LEVY LIKE LIME LIMP LINK LINT LION LIST LIVE LOAD LOAF LOAN LOCK LOFT LONE LONG LOOK LOON LOOP LOOT LORE LOSE LOSS LOST LOUD LOVE LUBE LUCK LUGE LULL LUNG LURK LURE MACE MADE MAID MAIN MAKE MANE MANY MARE MARK MART MASK MASS MAST MATE MATH MAZE MEAD MEAL MEAN MEAT MEND MENU MERE MESA MESH MILD MILE MILL MIME MIND MINE MINT MIRE MIST MOAN MOAT MOCK MOLE MOLT MOON MOOR MOOT MOPE MORE MOST MOVE MUCH MULL MURK MUST MYTH NAIL NAPS NAVY NEAR NEAT NEED NEST NETS NEWT NICE NICK NINE NODE NONE NORM NOSE NOTE NOUN NONE NORM PACE PACK PAIN PAIR PALE PALL PALM PANE PANT PARK PART PASS PAST PATH PAVE PEAK PEEL PEER PELT PENS PEON PICK PIER PIKE PILE PILL PINE PING PINK PINT PIPE PITY PIXIE PLAN PLOP PLOT PLOW PLOY PLUM PLUS POEM POET POLE POLL POLO POND PORE PORK PORK PORT POSE POST POUR PREY PRIM PROD PROP PULL PUMP PURE PURR QUAD QUAY RAIN RAKE RAMP RANG RANK RANT RAPE RAVE RAYS READ REAL REAP REED REEL REIN REND RENT REST RIFE RIFT RIME RIOT RIPE RISE RISK ROAM ROAR ROBE ROCK ROLL ROOF ROOM ROOT ROPE ROSE ROUT ROVE RUDE RUFF RULE RUSE RUSH RUST SAGE SAIL SAKE SALE SALT SAME SAND SANE SANG SANK SAVE SCAN SCAR SCUM SEAM SEAT SEED SEEK SEEM SEEN SEND SHED SHIP SHOE SHOD SHOP SHOW SHOT SHUN SHUT SIDE SIFT SIGH SIGN SILK SILL SILO SING SINK SITE SLAB SLAG SLAP SLAW SLED SLID SLIM SLIP SLOT SLOW SLUM SNAP SNIT SNOB SNOB SNOW SOAK SOAR SOCK SOIL SOLE SOON SORE SORT SOUL SOUP SOUR SOAR SOWN SPAN SPAR SPIN SPIT SPOT SPUD SPUR STAG STAR STEM STEP STEW STIR STOP STUB STUD STUN SUCH SUIT SULK SUMP SUNK SURF SWAM SWAN SWAP SWAT SWIM SWUM SYNC TACK TAIL TAKE TALE TALK TALL TAME TANK TAPE TARE TAUT TEAR TEEM TELL TEND TENT TERN TEST THAN THAT THEM THEN THEY THIN THUD THUS TICK TIDE TIDY TIER TILT TIRE TOAD TOLL TOMB TOME TONE TONG TOOL TORE TORN TOSS TOUR TOWN TRAM TRAP TRAY TREE TRIM TRIO TRIP TROOP TROY TRUE TUBE TUCK TUFT TUNA TUNE TURF TURK TUSK TYPE UGLY UNDO UNIT UPON URGE USED VAIN VALE VANE VARY VASE VAST VEAL VEER VEIL VEIN VERY VEST VETO VIAL VIEW VILE VINE VISE VIVA VOID VOLE VOLT VOTE WAIL WAIF WANE WARD WARM WARN WARP WART WAVY WEAK WEAL WEAN WEED WEEK WELD WELL WENT WEPT WERE WEST WHAM WHAT WHEN WHET WHIM WHIP WHIZ WIDE WILE WILT WIND WINE WING WINK WIRE WISE WISP WOKE WOLF WORE WORK WORM WORN WOVE WRAP WREN WRIT YEAR YELL ZEAL ZERO ZEST ZONE ZOOM`.trim().split(/\s+/);
+LONG_WORDS.forEach(w => WORD_LIST.add(w));
+
+// ═══════════════════════════════ STATE ══
+let G = {
+  mode: 'pvp',   // 'pvp' | 'bot'
+  players: [NAMED_PLAYERS[0], NAMED_PLAYERS[3]], // Fred, Skai
+  scores: [0, 0],
+  turn: 0,  // 0 or 1
+  bag: [],
+  racks: [[], []],  // each rack: [{letter, val, id, blank}]
+  board: Array(15).fill(null).map(() => Array(15).fill(null)), // {letter, val, fixed, blank}
+  placed: [],  // tiles placed this turn: {r, c, idx (rack index)}
+  moveLog: [],
+  consecutivePasses: 0,
+  gameOver: false,
+  theme: 'carbon',
+  dark: false,
+  selectedRackIdx: null,
+  botDiff: 'easy',
+  tileCounter: 0,
+};
+
+// ═══════════════════════════════ TILE BAG ══
+function buildBag() {
+  const bag = [];
+  for (const [letter, {val, count}] of Object.entries(LETTER_DATA)) {
+    for (let i = 0; i < count; i++) {
+      bag.push({letter: letter === '?' ? '' : letter, val, id: G.tileCounter++, blank: letter === '?'});
+    }
+  }
+  return shuffle(bag);
+}
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function drawTiles(rack, n = 7) {
+  while (rack.length < 7 && G.bag.length > 0 && n-- > 0) {
+    rack.push(G.bag.pop());
+  }
+}
+
+// ═══════════════════════════════ BOARD HELPERS ══
+function sqType(r, c) {
+  return BOARD_LAYOUT[r][c];
+}
+
+function isCenter(r, c) { return r === 7 && c === 7; }
+
+function boardHasTiles() {
+  return G.board.some(row => row.some(sq => sq !== null));
+}
+
+function adjacentToFixed(r, c) {
+  return [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].some(([nr,nc]) =>
+    nr >= 0 && nr < 15 && nc >= 0 && nc < 15 && G.board[nr][nc]?.fixed
+  );
+}
+
+// ═══════════════════════════════ WORD SCORING ══
+function scorePlaced(placed) {
+  // Get all words formed
+  const words = getFormedWords(placed);
+  if (!words.length) return {total: 0, words: [], valid: false};
+
+  let total = 0;
+  const wordResults = [];
+  let allValid = true;
+
+  for (const {word, squares} of words) {
+    if (word.length < 2) { allValid = false; continue; }
+    if (!WORD_LIST.has(word.toUpperCase())) {
+      allValid = false;
+      wordResults.push({word, score: 0, valid: false});
+      continue;
+    }
+    let wordScore = 0, wordMult = 1;
+    for (const {r, c, letter, fixed} of squares) {
+      const val = G.board[r][c]?.val || 0;
+      let lm = 1, wm = 1;
+      if (!fixed) {  // only new tiles get bonus
+        const t = sqType(r, c);
+        if (t === 'dl') lm = 2;
+        if (t === 'tl') lm = 3;
+        if (t === 'dw' || t === '**') wm = 2;
+        if (t === 'tw') wm = 3;
+      }
+      wordScore += val * lm;
+      wordMult *= wm;
+    }
+    wordScore *= wordMult;
+    total += wordScore;
+    wordResults.push({word, score: wordScore, valid: true});
+  }
+
+  // 7-tile bingo bonus
+  if (placed.length === 7) total += 50;
+
+  return {total, words: wordResults, valid: allValid && wordResults.every(w => w.valid)};
+}
+
+function getFormedWords(placed) {
+  if (!placed.length) return [];
+  const placedSet = new Set(placed.map(p => `${p.r},${p.c}`));
+  const words = [];
+
+  const getWord = (r, c, dir) => {
+    // Find start
+    while (r > 0 && G.board[r-1][c] && dir === 'v') r--;
+    while (c > 0 && G.board[r][c-1] && dir === 'h') c--;
+    let word = '', squares = [];
+    while (r < 15 && c < 15 && G.board[r][c]) {
+      squares.push({r, c, letter: G.board[r][c].letter, fixed: G.board[r][c].fixed});
+      word += G.board[r][c].letter;
+      if (dir === 'v') r++; else c++;
+    }
+    return {word: word.toUpperCase(), squares};
+  };
+
+  // Direction of placement
+  const isHoriz = placed.length === 1 ? null :
+    placed[0].r === placed[placed.length-1].r ? 'h' : 'v';
+
+  if (placed.length === 1 || isHoriz === 'h') {
+    // Main word horizontal
+    const {word, squares} = getWord(placed[0].r, placed[0].c, 'h');
+    if (word.length >= 2) words.push({word, squares});
+    // Cross words vertical
+    for (const p of placed) {
+      const {word: vw, squares: vs} = getWord(p.r, p.c, 'v');
+      if (vw.length >= 2) words.push({word: vw, squares: vs});
+    }
+  }
+  if (placed.length === 1 || isHoriz === 'v') {
+    const {word, squares} = getWord(placed[0].r, placed[0].c, 'v');
+    if (word.length >= 2) words.push({word, squares});
+    for (const p of placed) {
+      const {word: hw, squares: hs} = getWord(p.r, p.c, 'h');
+      if (hw.length >= 2) words.push({word: hw, squares: hs});
+    }
+  }
+
+  // Dedup
+  const seen = new Set();
+  return words.filter(w => {
+    const key = w.squares.map(s => `${s.r},${s.c}`).join('|');
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+}
+
+function validatePlacement(placed) {
+  if (!placed.length) return {ok: false, msg: 'No tiles placed'};
+
+  // All in one row or one column
+  const rows = [...new Set(placed.map(p => p.r))];
+  const cols = [...new Set(placed.map(p => p.c))];
+  if (rows.length > 1 && cols.length > 1) return {ok: false, msg: 'Tiles must be in a line'};
+
+  // No gaps
+  if (rows.length === 1) {
+    const r = rows[0];
+    const minC = Math.min(...placed.map(p => p.c));
+    const maxC = Math.max(...placed.map(p => p.c));
+    for (let c = minC; c <= maxC; c++) {
+      if (!G.board[r][c]) return {ok: false, msg: 'Gap in word'};
+    }
+  } else {
+    const c = cols[0];
+    const minR = Math.min(...placed.map(p => p.r));
+    const maxR = Math.max(...placed.map(p => p.r));
+    for (let r = minR; r <= maxR; r++) {
+      if (!G.board[r][c]) return {ok: false, msg: 'Gap in word'};
+    }
+  }
+
+  // First move must cover center
+  if (!boardHasTiles() && !placed.some(p => isCenter(p.r, p.c))) {
+    // check if any already-fixed tile is at center — no, there shouldn't be
+    if (!placed.some(p => p.r === 7 && p.c === 7)) {
+      return {ok: false, msg: 'First word must cover center star'};
+    }
+  }
+
+  // Must connect to existing tiles (after first move)
+  if (boardHasTiles()) {
+    const connected = placed.some(p =>
+      [[p.r-1,p.c],[p.r+1,p.c],[p.r,p.c-1],[p.r,p.c+1]].some(([nr,nc]) =>
+        nr >= 0 && nr < 15 && nc >= 0 && nc < 15 && G.board[nr][nc]?.fixed
+      )
+    );
+    if (!connected) return {ok: false, msg: 'Must connect to existing tiles'};
+  }
+
+  return {ok: true};
+}
+
+// ═══════════════════════════════ RENDER ══
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  for (let r = 0; r < 15; r++) {
+    for (let c = 0; c < 15; c++) {
+      const sq = document.createElement('div');
+      const t = sqType(r, c);
+      sq.className = 'sq ' + (t === '**' ? 'star' : t);
+      sq.dataset.r = r; sq.dataset.c = c;
+
+      const cell = G.board[r][c];
+      if (cell) {
+        // Has a tile
+        const tile = document.createElement('div');
+        tile.className = 'tile' + (cell.blank ? ' blank' : '') +
+          (G.placed.some(p => p.r === r && p.c === c) ? ' placed-this-turn' : '');
+        tile.innerHTML = `<span class="tile-letter">${cell.letter}</span><span class="tile-val">${cell.val||''}</span>`;
+        if (!cell.fixed) {
+          tile.draggable = true;
+          tile.dataset.r = r; tile.dataset.c = c;
+          tile.addEventListener('dragstart', onBoardTileDragStart);
+          tile.addEventListener('click', onBoardTileClick);
+        }
+        sq.appendChild(tile);
+      } else {
+        // Empty — show label
+        let lbl = '';
+        if (t === '**') lbl = '★';
+        else if (t === 'tw') lbl = 'TW';
+        else if (t === 'dw') lbl = 'DW';
+        else if (t === 'tl') lbl = 'TL';
+        else if (t === 'dl') lbl = 'DL';
+        if (lbl) {
+          const span = document.createElement('span');
+          span.className = 'sq-label'; span.textContent = lbl;
+          sq.appendChild(span);
+        }
+        sq.addEventListener('dragover', e => e.preventDefault());
+        sq.addEventListener('drop', onSquareDrop);
+        sq.addEventListener('click', onSquareClick);
+      }
+
+      board.appendChild(sq);
+    }
+  }
+}
+
+function renderRack() {
+  const rack = document.getElementById('rack');
+  rack.innerHTML = '';
+  const tiles = G.racks[G.turn];
+
+  for (let i = 0; i < 7; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'rack-slot';
+    slot.dataset.slot = i;
+    slot.addEventListener('dragover', e => e.preventDefault());
+    slot.addEventListener('drop', onRackDrop);
+    slot.addEventListener('click', () => onRackSlotClick(i));
+
+    const tile = tiles[i];
+    if (tile) {
+      const td = document.createElement('div');
+      td.className = 'rack-tile' + (tile.blank ? ' blank' : '') +
+        (G.selectedRackIdx === i ? ' selected' : '');
+      td.innerHTML = `<span class="rack-letter">${tile.letter||'?'}</span><span class="rack-val">${tile.val||''}</span>`;
+      td.draggable = true;
+      td.dataset.rackidx = i;
+      td.addEventListener('dragstart', onRackTileDragStart);
+      td.addEventListener('click', e => { e.stopPropagation(); onRackTileClick(i); });
+      slot.appendChild(td);
+    }
+    rack.appendChild(slot);
+  }
+}
+
+function updateHeader() {
+  const p1 = G.players[0], p2 = G.players[1];
+  setAv('pbP1Av', p1, G.turn === 0);
+  setAv('pbP2Av', p2, G.turn === 1);
+  setText('pbP1Name', p1.name.toUpperCase());
+  setText('pbP2Name', p2.name.toUpperCase());
+  setText('pbP1Score', G.scores[0]);
+  setText('pbP2Score', G.scores[1]);
+  setText('statusChip', (G.turn === 0 ? p1.name : p2.name).toUpperCase() + ' TO PLAY');
+  const left = G.bag.length;
+  setText('tilesLeftChip', left + ' TILES');
+  setText('bagCount', left + ' TILES LEFT');
+  const bagBar = document.getElementById('bagBar');
+  if (bagBar) bagBar.style.width = (left / 98 * 100) + '%';
+  setText('modeChip', G.mode === 'bot' ? 'vs BOT' : 'PvP');
+  // Score breakdown
+  const sb = document.getElementById('scoreBreakdown');
+  if (sb) {
+    sb.innerHTML = `
+      <div style="display:flex;justify-content:space-between"><span class="label-mono">${p1.name.toUpperCase()}</span><span style="font-family:var(--font-display);font-size:18px;color:var(--accent)">${G.scores[0]}</span></div>
+      <div style="display:flex;justify-content:space-between"><span class="label-mono">${p2.name.toUpperCase()}</span><span style="font-family:var(--font-display);font-size:18px;color:var(--text2)">${G.scores[1]}</span></div>`;
+  }
+}
+
+function setAv(id, player, active) {
+  const el = document.getElementById(id); if (!el) return;
+  el.innerHTML = '';
+  if (player.photo) {
+    const img = document.createElement('img');
+    img.src = player.photo; img.alt = player.name;
+    img.onerror = () => { el.innerHTML = ''; el.textContent = player.name[0].toUpperCase(); };
+    el.appendChild(img);
+  } else {
+    el.textContent = player.name[0].toUpperCase();
+  }
+  el.className = 'pb-avatar ' + (active ? 'turn-active' : 'turn-waiting');
+}
+function setText(id, val) { const e = document.getElementById(id); if (e) e.textContent = val; }
+
+function addLogEntry(playerName, words, total) {
+  const log = document.getElementById('moveLog');
+  if (!log) return;
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  const wordStr = words.map(w => `<span class="log-word">${w.word}</span>(${w.score})`).join(' ');
+  entry.innerHTML = `<b style="color:var(--accent)">${playerName}</b> ${wordStr} <span class="log-pts">+${total}</span>`;
+  log.appendChild(entry);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ═══════════════════════════════ DRAG & DROP ══
+let dragSource = null; // {type:'rack'|'board', idx?, r?, c?}
+
+function onRackTileDragStart(e) {
+  const idx = parseInt(e.currentTarget.dataset.rackidx);
+  dragSource = {type: 'rack', idx};
+  e.currentTarget.classList.add('dragging');
+  setTimeout(() => e.currentTarget.classList.remove('dragging'), 0);
+}
+
+function onBoardTileDragStart(e) {
+  const r = parseInt(e.currentTarget.dataset.r);
+  const c = parseInt(e.currentTarget.dataset.c);
+  if (G.board[r][c]?.fixed) { e.preventDefault(); return; }
+  dragSource = {type: 'board', r, c};
+  e.currentTarget.classList.add('dragging');
+}
+
+function onSquareDrop(e) {
+  e.preventDefault();
+  if (!dragSource) return;
+  const sq = e.currentTarget;
+  const tr = parseInt(sq.dataset.r);
+  const tc = parseInt(sq.dataset.c);
+  if (G.board[tr][tc]) return; // occupied
+
+  if (dragSource.type === 'rack') {
+    placeRackTileOnBoard(dragSource.idx, tr, tc);
+  } else if (dragSource.type === 'board') {
+    moveBoardTile(dragSource.r, dragSource.c, tr, tc);
+  }
+  dragSource = null;
+}
+
+function onRackDrop(e) {
+  e.preventDefault();
+  if (!dragSource) return;
+  const slot = parseInt(e.currentTarget.dataset.slot);
+  if (dragSource.type === 'board') {
+    recallBoardTileToRack(dragSource.r, dragSource.c, slot);
+  } else if (dragSource.type === 'rack') {
+    // Swap rack slots
+    const rack = G.racks[G.turn];
+    const t = rack[slot]; rack[slot] = rack[dragSource.idx]; rack[dragSource.idx] = t;
+  }
+  dragSource = null;
+  renderRack(); renderBoard();
+}
+
+// Click-to-place
+function onRackTileClick(idx) {
+  if (G.selectedRackIdx === idx) { G.selectedRackIdx = null; }
+  else { G.selectedRackIdx = idx; }
+  renderRack();
+}
+function onRackSlotClick(slot) {
+  // If a rack tile is selected, move it
+  if (G.selectedRackIdx !== null && G.selectedRackIdx !== slot) {
+    const rack = G.racks[G.turn];
+    const t = rack[slot]; rack[slot] = rack[G.selectedRackIdx]; rack[G.selectedRackIdx] = t;
+    G.selectedRackIdx = null; renderRack();
+  }
+}
+function onSquareClick(e) {
+  const r = parseInt(e.currentTarget.dataset.r);
+  const c = parseInt(e.currentTarget.dataset.c);
+  if (G.board[r][c]) return;
+  if (G.selectedRackIdx !== null) {
+    placeRackTileOnBoard(G.selectedRackIdx, r, c);
+  }
+}
+function onBoardTileClick(e) {
+  const r = parseInt(e.currentTarget.dataset.r);
+  const c = parseInt(e.currentTarget.dataset.c);
+  if (G.board[r][c]?.fixed) return;
+  recallBoardTileToRack(r, c);
+  G.selectedRackIdx = null;
+}
+
+function placeRackTileOnBoard(rackIdx, r, c) {
+  const rack = G.racks[G.turn];
+  const tile = rack[rackIdx];
+  if (!tile) return;
+
+  if (tile.blank) {
+    // Choose letter for blank
+    showBlankChooser(letter => {
+      rack[rackIdx] = null;
+      G.board[r][c] = {...tile, letter, fixed: false};
+      G.placed.push({r, c, rackIdx});
+      G.selectedRackIdx = null;
+      compactRack();
+      renderBoard(); renderRack();
+    });
+    return;
+  }
+
+  rack[rackIdx] = null;
+  G.board[r][c] = {...tile, fixed: false};
+  G.placed.push({r, c, rackIdx});
+  G.selectedRackIdx = null;
+  compactRack();
+  renderBoard(); renderRack();
+}
+
+function moveBoardTile(fr, fc, tr, tc) {
+  G.board[tr][tc] = G.board[fr][fc];
+  G.board[fr][fc] = null;
+  const p = G.placed.find(p => p.r === fr && p.c === fc);
+  if (p) { p.r = tr; p.c = tc; }
+  renderBoard(); renderRack();
+}
+
+function recallBoardTileToRack(r, c, slot) {
+  const tile = G.board[r][c];
+  if (!tile || tile.fixed) return;
+  G.board[r][c] = null;
+  G.placed = G.placed.filter(p => !(p.r === r && p.c === c));
+  const rack = G.racks[G.turn];
+  // Restore blank letter to blank
+  const restored = tile.blank ? {...tile, letter: ''} : tile;
+  if (slot !== undefined && slot < 7) { rack[slot] = restored; }
+  else {
+    const empty = rack.findIndex(t => t === null);
+    if (empty >= 0) rack[empty] = restored; else rack.push(restored);
+  }
+  renderBoard(); renderRack();
+}
+
+function compactRack() {
+  const rack = G.racks[G.turn];
+  const tiles = rack.filter(t => t !== null);
+  while (tiles.length < 7) tiles.push(null);
+  G.racks[G.turn] = tiles.slice(0, 7);
+}
+
+// ═══════════════════════════════ BLANK CHOOSER ══
+let blankCallback = null;
+function showBlankChooser(cb) {
+  blankCallback = cb;
+  const chooser = document.getElementById('blankChooser');
+  const letters = document.getElementById('blankLetters');
+  letters.innerHTML = '';
+  for (let i = 0; i < 26; i++) {
+    const l = String.fromCharCode(65 + i);
+    const btn = document.createElement('div');
+    btn.className = 'blank-letter'; btn.textContent = l;
+    btn.onclick = () => { chooser.classList.remove('open'); if (blankCallback) blankCallback(l); blankCallback = null; };
+    letters.appendChild(btn);
+  }
+  chooser.classList.add('open');
+}
+
+// ═══════════════════════════════ PLAY WORD ══
+function playWord() {
+  if (!G.placed.length) { flash('Place tiles on the board first'); return; }
+
+  const valid = validatePlacement(G.placed);
+  if (!valid.ok) { flash(valid.msg); return; }
+
+  const {total, words, valid: wordsValid} = scorePlaced(G.placed);
+  if (!wordsValid) {
+    const bad = words.filter(w => !w.valid).map(w => w.word).join(', ');
+    flash('Invalid word' + (bad ? ': ' + bad : '')); return;
+  }
+  if (!words.length || total === 0) { flash('No valid words formed'); return; }
+
+  // Commit
+  G.placed.forEach(p => { G.board[p.r][p.c].fixed = true; });
+  G.placed = [];
+  G.scores[G.turn] += total;
+  G.consecutivePasses = 0;
+
+  addLogEntry(G.players[G.turn].name, words, total);
+  drawTiles(G.racks[G.turn]);
+
+  // Check win condition
+  if (G.racks[G.turn].every(t => t === null) && G.bag.length === 0) {
+    endGame(); return;
+  }
+
+  nextTurn();
+}
+
+function passTurn() {
+  recallAll();
+  G.consecutivePasses++;
+  if (G.consecutivePasses >= 4) { endGame(); return; }
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `<b style="color:var(--muted)">${G.players[G.turn].name}</b> passed`;
+  document.getElementById('moveLog')?.appendChild(entry);
+  nextTurn();
+}
+
+function recallAll() {
+  const placedCopy = [...G.placed];
+  placedCopy.forEach(p => recallBoardTileToRack(p.r, p.c));
+  G.placed = [];
+}
+
+function nextTurn() {
+  G.turn = 1 - G.turn;
+  G.selectedRackIdx = null;
+  renderAll();
+
+  if (G.mode === 'bot' && G.turn === 1) {
+    setTimeout(botPlay, 800);
+  }
+}
+
+function renderAll() {
+  renderBoard(); renderRack(); updateHeader();
+}
+
+// ═══════════════════════════════ BOT AI ══
+function botPlay() {
+  if (G.gameOver) return;
+  const rack = G.racks[1].filter(t => t !== null);
+  if (!rack.length) { nextTurn(); return; }
+
+  const best = findBestMove(rack);
+  if (!best) {
+    // Exchange or pass
+    if (G.bag.length >= 7) {
+      botExchange(rack);
+    } else {
+      passTurn();
+    }
+    return;
+  }
+
+  // Place best move
+  best.tiles.forEach(({r, c, tile}) => {
+    G.board[r][c] = {...tile, fixed: false};
+    G.placed.push({r, c});
+  });
+
+  // Remove placed tiles from rack
+  const rack2 = G.racks[1];
+  best.tiles.forEach(({tile}) => {
+    const idx = rack2.findIndex(t => t && t.id === tile.id);
+    if (idx >= 0) rack2[idx] = null;
+  });
+  compactRackFor(1);
+
+  const {total, words} = scorePlaced(G.placed);
+  G.placed.forEach(p => { G.board[p.r][p.c].fixed = true; });
+  G.placed = [];
+  G.scores[1] += total;
+  G.consecutivePasses = 0;
+  addLogEntry(G.players[1].name, words, total);
+  drawTilesFor(1);
+
+  if (G.racks[1].every(t => t === null) && G.bag.length === 0) {
+    endGame(); return;
+  }
+  nextTurn();
+}
+
+function compactRackFor(p) {
+  const tiles = G.racks[p].filter(t => t !== null);
+  while (tiles.length < 7) tiles.push(null);
+  G.racks[p] = tiles.slice(0, 7);
+}
+
+function drawTilesFor(p) {
+  const rack = G.racks[p];
+  for (let i = 0; i < 7; i++) {
+    if (!rack[i] && G.bag.length > 0) rack[i] = G.bag.pop();
+  }
+}
+
+function botExchange(rack) {
+  const n = Math.min(rack.length, G.bag.length);
+  const exchanged = rack.slice(0, n);
+  const rack2 = G.racks[1];
+  exchanged.forEach(tile => {
+    const idx = rack2.findIndex(t => t && t.id === tile.id);
+    if (idx >= 0) { G.bag.unshift(tile); rack2[idx] = null; }
+  });
+  shuffle(G.bag);
+  drawTilesFor(1);
+  compactRackFor(1);
+  passTurn();
+}
+
+function findBestMove(rack) {
+  // Simple bot: try placing rack tiles in various board positions
+  const candidates = [];
+  const letters = rack.map(t => t.letter);
+
+  // Try each board position
+  for (let r = 0; r < 15; r++) {
+    for (let c = 0; c < 15; c++) {
+      if (G.board[r][c]) continue;
+      // Try horizontal words of length 2-7 starting here
+      for (let len = 2; len <= Math.min(7, 15 - c); len++) {
+        const candidate = tryWord(r, c, 'h', rack, len);
+        if (candidate) candidates.push(candidate);
+      }
+      // Try vertical
+      for (let len = 2; len <= Math.min(7, 15 - r); len++) {
+        const candidate = tryWord(r, c, 'v', rack, len);
+        if (candidate) candidates.push(candidate);
+      }
+    }
+  }
+
+  if (!candidates.length) return null;
+
+  // Sort by score, pick best or random from top depending on difficulty
+  candidates.sort((a, b) => b.score - a.score);
+  if (G.botDiff === 'easy') return candidates[Math.min(Math.floor(Math.random() * 5), candidates.length - 1)];
+  if (G.botDiff === 'medium') return candidates[Math.min(Math.floor(Math.random() * 2), candidates.length - 1)];
+  return candidates[0];
+}
+
+function tryWord(startR, startC, dir, rack, len) {
+  // Build a word from rack + existing board tiles
+  const positions = [];
+  for (let i = 0; i < len; i++) {
+    const r = dir === 'v' ? startR + i : startR;
+    const c = dir === 'h' ? startC + i : startC;
+    if (r >= 15 || c >= 15) return null;
+    positions.push({r, c, existing: G.board[r][c]});
+  }
+
+  // Must not all be existing
+  const needFromRack = positions.filter(p => !p.existing);
+  if (!needFromRack.length) return null;
+
+  // Try to form a word using rack tiles for empty spots
+  const rackCopy = [...rack];
+  const placed = [];
+
+  for (const pos of needFromRack) {
+    const idx = rackCopy.findIndex(t => t !== null);
+    if (idx < 0) return null;
+    placed.push({r: pos.r, c: pos.c, tile: rackCopy[idx]});
+    rackCopy[idx] = null;
+  }
+
+  // Temporarily place
+  placed.forEach(p => { G.board[p.r][p.c] = {...p.tile, fixed: false}; });
+  G.placed = placed.map(p => ({r: p.r, c: p.c}));
+
+  const valid = validatePlacement(G.placed);
+  const {total, words, valid: wv} = valid.ok ? scorePlaced(G.placed) : {total:0, words:[], valid:false};
+
+  // Undo
+  placed.forEach(p => { G.board[p.r][p.c] = null; });
+  G.placed = [];
+
+  if (!valid.ok || !wv || !total) return null;
+  return {score: total, tiles: placed, words};
+}
+
+// ═══════════════════════════════ END GAME ══
+function endGame() {
+  G.gameOver = true;
+  // Deduct remaining rack tiles
+  G.racks.forEach((rack, i) => {
+    rack.forEach(t => { if (t) G.scores[i] -= t.val; });
+  });
+
+  const p1 = G.players[0], p2 = G.players[1];
+  const modal = document.getElementById('resultModal');
+  const scores = document.getElementById('resultScores');
+  scores.innerHTML = `
+    <div class="result-score"><div class="result-score-val">${G.scores[0]}</div><div class="result-score-name">${p1.name.toUpperCase()}</div></div>
+    <div class="result-score"><div class="result-score-val">${G.scores[1]}</div><div class="result-score-name">${p2.name.toUpperCase()}</div></div>`;
+
+  const winner = G.scores[0] > G.scores[1] ? p1.name :
+                 G.scores[1] > G.scores[0] ? p2.name : null;
+  setText('resultWinner', winner ? winner.toUpperCase() + ' WINS!' : 'IT\'S A TIE!');
+  setText('resultTitle', 'GAME OVER');
+  modal.classList.add('open');
+  renderAll();
+}
+
+function flash(msg) {
+  const chip = document.getElementById('statusChip');
+  if (!chip) return;
+  const prev = chip.textContent;
+  chip.textContent = msg;
+  chip.className = 'pb-chip danger';
+  setTimeout(() => { chip.textContent = prev; chip.className = 'pb-chip'; }, 2000);
+}
+
+// ═══════════════════════════════ GAME START ══
+function startGame(cfg) {
+  Object.assign(G, {
+    mode: cfg.mode,
+    players: cfg.players,
+    scores: [0, 0],
+    turn: 0,
+    consecutivePasses: 0,
+    gameOver: false,
+    placed: [],
+    selectedRackIdx: null,
+    board: Array(15).fill(null).map(() => Array(15).fill(null)),
+    moveLog: [],
+    botDiff: cfg.botDiff || 'easy',
+  });
+  G.bag = buildBag();
+  G.racks = [[], []];
+  drawTiles(G.racks[0]);
+  drawTilesFor(1);
+
+  document.getElementById('resultModal').classList.remove('open');
+  document.getElementById('moveLog').innerHTML = '';
+
+  setLandingPlayers(cfg.players[0], cfg.players[1]);
+  showScreen('game');
+  renderAll();
+}
+
+// ═══════════════════════════════ LANDING HELPERS ══
+function setLandingPlayers(p1, p2) {
+  setAvLanding('landingP1Av', p1);
+  setAvLanding('landingP2Av', p2);
+  setText('landingP1Name', p1.name.toUpperCase());
+  setText('landingP2Name', p2.name.toUpperCase());
+}
+function setAvLanding(id, player) {
+  const el = document.getElementById(id); if (!el) return;
+  el.innerHTML = '';
+  if (player.photo) {
+    const img = document.createElement('img');
+    img.src = player.photo; img.alt = player.name;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+    img.onerror = () => { el.innerHTML = ''; el.textContent = player.name[0]; };
+    el.appendChild(img);
+  } else { el.textContent = player.name[0]; }
+}
+
+function buildPlayerList(containerId, stateKey) {
+  const c = document.getElementById(containerId); if (!c) return;
+  c.innerHTML = '';
+  NAMED_PLAYERS.forEach(pl => {
+    const opt = document.createElement('div');
+    opt.className = 'player-opt' + (G[stateKey]?.id === pl.id ? ' selected' : '');
+    const av = document.createElement('div'); av.className = 'av';
+    if (pl.photo) {
+      const img = document.createElement('img'); img.src = pl.photo; img.alt = pl.name;
+      img.onerror = () => { av.innerHTML = ''; const sp = document.createElement('span'); sp.className = 'av-init'; sp.textContent = pl.name[0]; av.appendChild(sp); };
+      av.appendChild(img);
+    } else { const sp = document.createElement('span'); sp.className = 'av-init'; sp.textContent = pl.name[0]; av.appendChild(sp); }
+    const info = document.createElement('div'); info.className = 'player-opt-info';
+    const nm = document.createElement('div'); nm.className = 'player-opt-name'; nm.textContent = pl.name.toUpperCase();
+    const tg = document.createElement('div'); tg.className = 'player-opt-tag'; tg.textContent = pl.isFred ? '🔐 PASSWORD PROTECTED' : 'PLAYER';
+    info.appendChild(nm); info.appendChild(tg);
+    opt.appendChild(av); opt.appendChild(info);
+    opt.onclick = () => {
+      G[stateKey] = pl;
+      c.querySelectorAll('.player-opt').forEach(x => x.classList.remove('selected'));
+      opt.classList.add('selected');
+      updateFredField();
+    };
+    c.appendChild(opt);
+  });
+}
+
+function updateFredField() {
+  const needed = G.selP1?.isFred || G.selP2?.isFred;
+  const wrap = document.getElementById('fredPassWrap');
+  if (wrap) wrap.style.display = needed ? 'flex' : 'none';
+  const sNeeded = G.selSol?.isFred;
+  const sw = document.getElementById('solFredPassWrap');
+  if (sw) sw.style.display = sNeeded ? 'flex' : 'none';
+}
+
+// ═══════════════════════════════ THEME / DARK ══
+function setTheme(t) {
+  G.theme = t;
+  document.body.setAttribute('data-theme', t);
+  document.querySelectorAll('[data-theme-sel]').forEach(d => d.classList.toggle('active', d.dataset.themeSel === t));
+}
+function setDark(on) {
+  G.dark = on;
+  document.body.setAttribute('data-dark', on ? 'on' : 'off');
+  document.getElementById('darkToggle').textContent = on ? '🌙' : '☀️';
+  const md = document.getElementById('menuDark');
+  if (md) md.textContent = on ? '🌙 DARK' : '☀️ LIGHT';
+}
+function buildThemePicker(id, cls) {
+  const c = document.getElementById(id); if (!c) return;
+  c.innerHTML = '';
+  THEMES.forEach(t => {
+    const d = document.createElement('div');
+    d.className = cls + (G.theme === t ? ' active' : '');
+    d.dataset.theme = t; d.dataset.themeSel = t;
+    d.title = t.charAt(0).toUpperCase() + t.slice(1);
+    d.onclick = () => setTheme(t);
+    c.appendChild(d);
+  });
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+// ═══════════════════════════════ HERO BOARD ══
+function renderHeroBoard() {
+  const hb = document.getElementById('heroBoard'); if (!hb) return;
+  hb.innerHTML = '';
+  // Place some fake tiles spelling SCRABBLE on the hero board
+  const fakeTiles = new Set(['52','53','54','55','56','57','58']); // row 3, center
+  const fakeLetters = {52:'S',53:'C',54:'R',55:'A',56:'B',57:'B',58:'L'}; // col 2-8 row 3
+
+  for (let r = 0; r < 15; r++) {
+    for (let c = 0; c < 15; c++) {
+      const sq = document.createElement('div');
+      const t = sqType(r, c);
+      const key = `${r}${c}`;
+      if (fakeTiles.has(key)) {
+        sq.className = 'hero-sq t';
+        sq.style.cssText = 'background:var(--tile-bg);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:9px;color:var(--tile-text)';
+        sq.textContent = fakeLetters[key] || '';
+      } else {
+        sq.className = 'hero-sq ' + (t === '**' ? 'dw' : t === 'n' ? 'n' : t);
+      }
+      hb.appendChild(sq);
+    }
+  }
+}
+
+// ═══════════════════════════════ EXCHANGE ══
+function showExchange() {
+  const rack = document.getElementById('exchangeRack'); if (!rack) return;
+  rack.innerHTML = '';
+  const exSel = new Set();
+  G.racks[G.turn].forEach((tile, i) => {
+    if (!tile) return;
+    const td = document.createElement('div');
+    td.style.cssText = 'width:48px;height:56px;background:var(--tile-bg);border:2px solid var(--tile-border);border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;position:relative';
+    td.innerHTML = `<span style="font-family:var(--font-display);font-size:22px;color:var(--tile-text)">${tile.letter||'?'}</span><span style="font-family:var(--font-mono);font-size:9px;color:var(--tile-val)">${tile.val}</span>`;
+    td.onclick = () => {
+      if (exSel.has(i)) { exSel.delete(i); td.style.borderColor = 'var(--tile-border)'; td.style.transform = ''; }
+      else { exSel.add(i); td.style.borderColor = 'var(--accent)'; td.style.transform = 'translateY(-6px)'; }
+    };
+    rack.appendChild(td);
+  });
+  document.getElementById('exchangeModal').classList.add('open');
+
+  document.getElementById('exchangeConfirmBtn').onclick = () => {
+    if (!exSel.size) return;
+    if (G.bag.length < exSel.size) { alert('Not enough tiles in bag'); return; }
+    const rack2 = G.racks[G.turn];
+    exSel.forEach(i => { G.bag.unshift(rack2[i]); rack2[i] = null; });
+    shuffle(G.bag);
+    compactRack();
+    drawTiles(G.racks[G.turn]);
+    document.getElementById('exchangeModal').classList.remove('open');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.innerHTML = `<b style="color:var(--muted)">${G.players[G.turn].name}</b> exchanged ${exSel.size} tile${exSel.size>1?'s':''}`;
+    document.getElementById('moveLog')?.appendChild(entry);
+    G.consecutivePasses++;
+    if (G.consecutivePasses >= 4) { endGame(); return; }
+    nextTurn();
+  };
+}
+
+// ═══════════════════════════════ INIT ══
+document.addEventListener('DOMContentLoaded', () => {
+  // Default selections
+  G.selP1 = NAMED_PLAYERS[0]; // Fred
+  G.selP2 = NAMED_PLAYERS[3]; // Skai
+  G.selSol = NAMED_PLAYERS[0]; // Fred
+  G.botDiff = 'easy';
+
+  renderHeroBoard();
+  buildThemePicker('landingThemePicker', 'theme-dot');
+  setLandingPlayers(NAMED_PLAYERS[0], NAMED_PLAYERS[3]);
+
+  // Dark toggle
+  document.getElementById('darkToggle').onclick = () => setDark(!G.dark);
+  document.getElementById('fullscreenBtn').onclick = toggleFullscreen;
+  document.getElementById('fullscreenBtnGame').onclick = toggleFullscreen;
+
+  // PvP
+  document.getElementById('pvpBtn').onclick = () => {
+    buildPlayerList('p1List', 'selP1');
+    buildPlayerList('p2List', 'selP2');
+    document.getElementById('fredPassInput').value = '';
+    document.getElementById('fredPassErr').classList.remove('show');
+    updateFredField();
+    document.getElementById('pvpModal').classList.add('open');
+  };
+  document.getElementById('pvpStartBtn').onclick = () => {
+    if (!G.selP1 || !G.selP2) { alert('Select both players'); return; }
+    if (G.selP1.isFred || G.selP2.isFred) {
+      if (document.getElementById('fredPassInput').value !== FRED_PASS) {
+        document.getElementById('fredPassErr').classList.add('show'); return;
+      }
+    }
+    document.getElementById('pvpModal').classList.remove('open');
+    startGame({mode:'pvp', players:[G.selP1, G.selP2]});
+  };
+  document.getElementById('pvpCancelBtn').onclick = () => document.getElementById('pvpModal').classList.remove('open');
+
+  // vs Bot
+  document.getElementById('solBtn').onclick = () => {
+    buildPlayerList('solList', 'selSol');
+    document.getElementById('solFredPassInput').value = '';
+    document.getElementById('solFredPassErr').classList.remove('show');
+    updateFredField();
+    document.getElementById('solModal').classList.add('open');
+  };
+  document.getElementById('solStartBtn').onclick = () => {
+    if (!G.selSol) { alert('Select a player'); return; }
+    if (G.selSol.isFred) {
+      if (document.getElementById('solFredPassInput').value !== FRED_PASS) {
+        document.getElementById('solFredPassErr').classList.add('show'); return;
+      }
+    }
+    document.getElementById('solModal').classList.remove('open');
+    const botPlayer = {id:'bot', name:'Bot', photo:null, isFred:false};
+    startGame({mode:'bot', players:[G.selSol, botPlayer], botDiff: G.botDiff});
+  };
+  document.getElementById('solCancelBtn').onclick = () => document.getElementById('solModal').classList.remove('open');
+
+  // Diff picker
+  document.querySelectorAll('[data-diff]').forEach(b => {
+    b.onclick = () => {
+      G.botDiff = b.dataset.diff;
+      document.querySelectorAll('[data-diff]').forEach(x => {
+        x.style.borderColor = 'var(--border)'; x.style.color = 'var(--text2)';
+      });
+      b.style.borderColor = 'var(--accent)'; b.style.color = 'var(--accent)';
+    };
+  });
+
+  // In-game actions
+  document.getElementById('playBtn').onclick = playWord;
+  document.getElementById('passBtn').onclick = passTurn;
+  document.getElementById('exchangeBtn').onclick = () => {
+    if (G.bag.length === 0) { flash('Bag is empty'); return; }
+    showExchange();
+  };
+  document.getElementById('undoBtn').onclick = () => { recallAll(); renderAll(); };
+  document.getElementById('shuffleBtn').onclick = () => {
+    const rack = G.racks[G.turn];
+    const tiles = rack.filter(t => t !== null);
+    shuffle(tiles);
+    let ti = 0;
+    for (let i = 0; i < 7; i++) { rack[i] = tiles[ti] || null; if (tiles[ti]) ti++; }
+    renderRack();
+  };
+
+  // Menu
+  document.getElementById('menuBtn').onclick = () => {
+    buildThemePicker('igThemePicker', 'ig-theme-dot');
+    const md = document.getElementById('menuDark');
+    if (md) md.textContent = G.dark ? '🌙 DARK' : '☀️ LIGHT';
+    document.getElementById('menuModal').classList.add('open');
+  };
+  document.getElementById('menuDark').onclick = () => setDark(!G.dark);
+  document.getElementById('menuNewGame').onclick = () => { document.getElementById('menuModal').classList.remove('open'); showScreen('landing'); };
+  document.getElementById('menuResign').onclick = () => { document.getElementById('menuModal').classList.remove('open'); endGame(); };
+  document.getElementById('menuClose').onclick = () => document.getElementById('menuModal').classList.remove('open');
+
+  // Exchange modal
+  document.getElementById('exchangeCancelBtn').onclick = () => document.getElementById('exchangeModal').classList.remove('open');
+
+  // Result
+  document.getElementById('resultPlayAgain').onclick = () => {
+    document.getElementById('resultModal').classList.remove('open');
+    startGame({mode:G.mode, players:G.players, botDiff:G.botDiff});
+  };
+  document.getElementById('resultMenu').onclick = () => {
+    document.getElementById('resultModal').classList.remove('open');
+    showScreen('landing');
+  };
+
+  // Close modals on backdrop
+  document.querySelectorAll('.modal-overlay').forEach(mo => {
+    mo.addEventListener('click', e => { if (e.target === mo) mo.classList.remove('open'); });
+  });
+
+  // Fullscreen listener
+  document.addEventListener('fullscreenchange', () => {
+    const isFs = !!document.fullscreenElement;
+    document.getElementById('fullscreenBtn').classList.toggle('active', isFs);
+    document.getElementById('fullscreenBtnGame').classList.toggle('active', isFs);
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+      document.getElementById('blankChooser').classList.remove('open');
+    }
+    if ((e.key === 'Enter') && !e.target.matches('input')) playWord();
+  });
+});
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
+  else document.exitFullscreen?.();
+}
+</script>
+</body>
+</html>
